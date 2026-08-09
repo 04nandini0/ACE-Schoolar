@@ -30,7 +30,7 @@ try {
     console.error("❌ Error loading database.json:", error.message);
 }
 
-// 🌟 FIXED ENDPOINT NAME to match frontend request
+// 🌟 FIXED ENDPOINT: It MUST be exactly /api/route to match the frontend
 app.post('/api/route', async (req, res) => {
     try {
         const { platform, question, image } = req.body;
@@ -68,7 +68,6 @@ app.post('/api/route', async (req, res) => {
         let promptText = `You are ACE-Scholar, an expert academic navigation AI. Platform: "${platform}". `;
         
         if (image && question) {
-            // 🌟 NEW: Force Gemini to look at the screen to solve the SPECIFIC question asked!
             promptText += `
             The user uploaded a screenshot of their current screen and has a specific question.
             USER'S GOAL: "${question}"
@@ -108,7 +107,7 @@ app.post('/api/route', async (req, res) => {
             });
         }
 
-        // 3. CALL THE ACTIVE GEMINI MODEL (Fixed typo in model name)
+        // 3. CALL THE ACTIVE GEMINI MODEL
         const response = await ai.models.generateContent({
             model: 'gemini-1.5-flash', 
             contents: contentsArray
