@@ -8,7 +8,6 @@ const fs = require('fs');
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -31,7 +30,8 @@ try {
     console.error("❌ Error loading database.json:", error.message);
 }
 
-app.post('/api/navigate', async (req, res) => {
+// 🌟 FIXED ENDPOINT NAME to match frontend request
+app.post('/api/route', async (req, res) => {
     try {
         const { platform, question, image } = req.body;
         console.log(`📡 Request received for platform: ${platform}`);
@@ -108,9 +108,9 @@ app.post('/api/navigate', async (req, res) => {
             });
         }
 
-        // 3. CALL THE ACTIVE GEMINI MODEL (Using 1.5-flash for real-world Node SDK stability)
+        // 3. CALL THE ACTIVE GEMINI MODEL (Fixed typo in model name)
         const response = await ai.models.generateContent({
-            model: 'gemini-3not .5-flash', 
+            model: 'gemini-1.5-flash', 
             contents: contentsArray
         });
         
@@ -145,4 +145,3 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 LISTENING ON PORT: ${PORT}`);
     console.log(`=========================================`);
 });
-
