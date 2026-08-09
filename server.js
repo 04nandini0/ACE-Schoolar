@@ -108,7 +108,7 @@ app.post('/api/route', async (req, res) => {
 
         // 3. CALL THE ACTIVE GEMINI MODEL
         const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash', 
+            model: 'gemini-2.5-flash', 
             contents: contentsArray
         });
         
