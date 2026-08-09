@@ -11,7 +11,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname)));
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -133,6 +132,8 @@ app.post('/api/route', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch navigation steps." });
     }
 });
+
+app.use(express.static(path.join(__dirname)));
 
 // --- 🌟 BULLETPROOF CLOUD LAUNCHER ---
 const PORT = process.env.PORT || 3000;
