@@ -110,7 +110,7 @@ app.post('/api/navigate', async (req, res) => {
 
         // 3. CALL THE ACTIVE GEMINI MODEL (Using 1.5-flash for real-world Node SDK stability)
         const response = await ai.models.generateContent({
-            model: 'gemini-3.5-flash', 
+            model: 'gemini-3not .5-flash', 
             contents: contentsArray
         });
         
@@ -136,7 +136,7 @@ app.post('/api/navigate', async (req, res) => {
 });
 
 // 🌟 HYBRID BINDING: Use 0.0.0.0 on Zerops, but safely loopback to 127.0.0.1 on Windows
-const activeHost = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
+const activeHost = '0.0.0.0'; // 🌟 HARDCODED FOR ZEROPS CLOUD
 
 app.listen(port, activeHost, () => {
     console.log(`🚀 ACE-Scholar Brain is running at http://${activeHost}:${port}`);
