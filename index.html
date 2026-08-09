@@ -578,7 +578,7 @@
                     payload.image = attachedImageBase64;
                 }
 
-                const response = await fetch('/api/route', {
+                const response = await fetch('/api/navigate', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
