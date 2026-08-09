@@ -135,9 +135,14 @@ app.post('/api/navigate', async (req, res) => {
     }
 });
 
-// 🌟 HYBRID BINDING: Use 0.0.0.0 on Zerops, but safely loopback to 127.0.0.1 on Windows
-const activeHost = '0.0.0.0'; // 🌟 HARDCODED FOR ZEROPS CLOUD
+// --- 🌟 BULLETPROOF CLOUD LAUNCHER ---
+const PORT = process.env.PORT || 3000;
 
-app.listen(port, activeHost, () => {
-    console.log(`🚀 ACE-Scholar Brain is running at http://${activeHost}:${port}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`=========================================`);
+    console.log(`🚀 ZEROPS CLOUD SERVER IS ALIVE!`);
+    console.log(`🚀 LISTENING ON HOST: 0.0.0.0`);
+    console.log(`🚀 LISTENING ON PORT: ${PORT}`);
+    console.log(`=========================================`);
 });
+
