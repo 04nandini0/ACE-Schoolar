@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACE-Scholar | Your Academic Compass</title>
+    
+    <!-- Universal Retro Monocraft Font (jsDelivr CDN) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/monocraft@4.0.0/dist/Monocraft.css">
+
+
+    <style>
+                /* --- 1. CORE DESIGN TOKENS --- */
+        :root {
+            --bg-base: #050807;
+            --surface-1: #0B110F;
+            --surface-2: #101815;
+            --surface-3: #131D19;
+            
+            --green-primary: #39FF88;
+            --green-secondary: #1ED760;
+            --green-muted: #76B894;
+            
+            --text-main: #F1F5F2;
+            --text-muted: #8B9B92;
+            --border-subtle: rgba(118, 184, 148, 0.15);
+            --border-glow: rgba(57, 255, 136, 0.3);
+        }
+
+                /* --- 2. GLOBAL RESET & TYPOGRAPHY --- */
+        
+        /* 🌟 THE MONOCRAFT OVERRIDE: Force Monocraft on literally everything */
+        *, *::before, *::after { 
+            box-sizing: border-box; 
+            font-family: 'Monocraft', monospace !important;
+        }
+        
+        /* Force form elements to inherit the pixel font instead of browser defaults */
+        input, button, textarea, select {
+            font-family: 'Monocraft', monospace !important;
+        }
+
+        html { scroll-behavior: smooth; }
+
+                /* UPDATE YOUR EXISTING BODY TAG WITH THESE BACKGROUND PROPERTIES */
+        body {
+            /* (Keep your existing font and margin properties here) */
+            background-color: var(--bg-base);
+            
+            /* 🌟 The Cyberpunk Matrix Grid */
+            background-image: 
+                linear-gradient(rgba(57, 255, 136, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(57, 255, 136, 0.04) 1px, transparent 1px);
+            background-size: 80px 80px; 
+            background-position: center center;
+            background-attachment: fixed;
+        }
+
+        #cursorGlow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none; /* Crucial: lets you click buttons through the glow */
+            z-index: 9999;
+            /* Reads the variables from your mouse movement */
+            background: radial-gradient(
+                450px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh),
+                rgba(57, 255, 136, 0.07),
+                transparent 50%
+            );
+        }
+
+        /* Adjust global text elements to fit the monospaced aesthetic */
+        h1, h2, h3, h4 { 
+            font-weight: 700; 
+            letter-spacing: 0px; 
+            text-transform: uppercase;
+        }
+
+        /* Adjust labels and badges so they render nicely in Monocraft */
+        .section-label, .status-badge { 
+            font-size: 11px; 
+            line-height: 1.8; 
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary { 
+            font-size: 14px; 
+            font-weight: 700;
+        }
+        
+        .node-marker { 
+            font-size: 12px; 
+            padding-top: 1px; 
+        }
+        
+        .eyebrow { 
+            font-size: 10px; 
+        }
+        
+        .nav-brand { 
+            font-size: 18px; 
+            font-weight: 700;
+        }
+
+        /* --- 3. NAVIGATION --- */
+        .top-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 5vw; background: rgba(5, 8, 7, 0.8);
+            backdrop-filter: blur(12px); position: fixed;
+            width: 100%; top: 0; z-index: 100;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .nav-brand {
+            font-weight: 700; font-size: 18px; color: var(--text-main);
+            text-decoration: none; letter-spacing: -0.5px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .nav-brand-icon { color: var(--green-primary); font-size: 20px; }
+        .nav-links { display: flex; align-items: center; gap: 32px; font-size: 14px; font-weight: 500; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; transition: all 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--green-primary); text-shadow: 0 0 12px rgba(57, 255, 136, 0.4); }
+        
+        .status-badge {
+            display: flex; align-items: center; gap: 6px;
+            background: var(--surface-2); padding: 6px 12px;
+            border-radius: 4px; font-size: 11px; color: var(--green-primary);
+            border: 1px solid var(--border-glow); text-transform: uppercase; letter-spacing: 1px;
+        }
+        .status-dot { width: 6px; height: 6px; background-color: var(--green-primary); border-radius: 50%; box-shadow: 0 0 8px var(--green-primary); }
+
+        /* --- 4. HERO SECTION --- */
+        .hero {
+            padding: 140px 5vw 80px;
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            opacity: 0; /* Will fade up via animation */
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        /* Compass decorative elements */
+        .hero::before {
+            content: 'N'; position: absolute; top: 100px; left: 50%;
+            transform: translateX(-50%); font-family: 'JetBrains Mono';
+            color: var(--border-subtle); font-size: 12px; letter-spacing: 2px;
+        }
+        .hero-crosshair {
+            position: absolute; top: 50%; left: 0; width: 100%; height: 1px;
+            background: var(--border-subtle); z-index: -1;
+        }
+        
+        .eyebrow {
+            display: inline-block; font-size: 12px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--green-primary); margin-bottom: 24px;
+            background: rgba(57, 255, 136, 0.1); padding: 4px 12px; border-radius: 4px;
+        }
+        .hero h1 {
+            font-size: clamp(40px, 6vw, 64px); font-weight: 700;
+            letter-spacing: -1.5px; line-height: 1.1; margin: 0 0 24px 0; color: var(--text-main);
+        }
+        .hero p { font-size: 18px; color: var(--text-muted); max-width: 500px; margin: 0; line-height: 1.6; }
+
+        /* --- 5. MAIN CONSOLE --- */
+        .console-wrapper {
+            max-width: 1100px; margin: 0 auto 100px; padding: 0 5vw;
+            display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: start;
+            opacity: 0; 
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+        }
+
+        .navigation-console {
+            background: var(--surface-1); border: 1px solid var(--border-subtle);
+            border-radius: 12px; padding: 40px; position: relative;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
+        }
+        /* Tech corner accents */
+        .navigation-console::before {
+            content: ''; position: absolute; top: -1px; left: -1px; width: 20px; height: 20px;
+            border-top: 2px solid var(--green-muted); border-left: 2px solid var(--green-muted);
+        }
+        
+        .section-label {
+            font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            text-transform: uppercase; letter-spacing: 1px; color: var(--green-muted);
+            margin-bottom: 16px; display: block;
+        }
+
+        /* Platform Selection */
+        .platform-tabs { display: flex; gap: 8px; margin-bottom: 32px; }
+        .p-tab {
+            flex: 1; text-align: center; padding: 12px; font-size: 13px; font-weight: 600;
+            color: var(--text-muted); background: var(--surface-2); border: 1px solid var(--border-subtle);
+            border-radius: 6px; cursor: pointer; transition: all 0.2s ease;
+        }
+        .p-tab:hover { color: var(--text-main); border-color: var(--green-muted); }
+        .p-tab.active {
+            background: rgba(57, 255, 136, 0.05); color: var(--green-primary);
+            border-color: var(--green-primary); box-shadow: inset 0 0 10px rgba(57, 255, 136, 0.1);
+        }
+
+        /* Command Input */
+        .command-input-area { position: relative; margin-bottom: 24px; }
+        textarea {
+            width: 100%; height: 120px; background: var(--surface-2);
+            border: 1px solid var(--border-subtle); border-radius: 8px;
+            padding: 20px; font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 16px; color: var(--text-main); resize: none; transition: all 0.2s ease;
+        }
+        textarea::placeholder { color: #4A5B52; }
+        textarea:focus { outline: none; background: var(--surface-3); border-color: var(--green-primary); box-shadow: 0 0 15px rgba(57, 255, 136, 0.15); }
+
+        /* Smart Suggestions */
+        .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+        .sugg-chip {
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--green-muted);
+            background: var(--surface-2); padding: 6px 12px; border: 1px solid var(--border-subtle);
+            border-radius: 4px; cursor: pointer; transition: all 0.2s;
+        }
+        .sugg-chip:hover { color: var(--green-primary); border-color: var(--green-primary); background: rgba(57, 255, 136, 0.1); }
+
+        /* Main CTA Button */
+        .btn-primary {
+            width: 100%; padding: 16px; background: var(--green-primary); color: var(--bg-base);
+            border: none; border-radius: 6px; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-primary:hover { background: var(--green-secondary); box-shadow: 0 0 20px rgba(57, 255, 136, 0.3); transform: translateY(-1px); }
+
+        /* Secondary Upload Pathway */
+        .upload-pathway {
+            margin-top: 24px; border: 1px dashed var(--border-subtle); border-radius: 8px;
+            padding: 20px; text-align: center; background: var(--surface-2);
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .upload-pathway:hover { background: var(--surface-3); border-color: var(--green-muted); }
+        .upload-pathway strong { display: block; color: var(--text-main); font-size: 14px; margin-bottom: 4px; }
+        .upload-pathway span { font-size: 12px; color: var(--text-muted); }
+
+        /* --- 6. RESULTS & ROUTE MAP --- */
+        .result-area {
+            display: none; background: var(--surface-1); border: 1px solid var(--border-glow);
+            border-radius: 12px; padding: 40px; position: relative;
+            box-shadow: 0 0 30px rgba(57, 255, 136, 0.05);
+            animation: slideUp 0.4s ease forwards;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .route-header { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--green-primary); letter-spacing: 1.5px; margin-bottom: 32px; display: flex; align-items: center; gap: 8px; }
+        .route-header::before { content: '⌖'; font-size: 16px; }
+        
+        .route-node { position: relative; padding-left: 36px; margin-bottom: 32px; }
+        .route-node:not(:last-child)::after { content: ''; position: absolute; left: 11px; top: 28px; bottom: -28px; width: 1px; background: var(--border-glow); }
+        .node-marker { position: absolute; left: 0; top: 0; width: 24px; height: 24px; background: var(--surface-1); border: 1px solid var(--green-primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--green-primary); z-index: 2; }
+        .route-node.success .node-marker { background: var(--green-primary); color: var(--bg-base); box-shadow: 0 0 10px var(--green-primary); }
+        .route-node h4 { margin: 0 0 4px 0; font-size: 15px; color: var(--text-main); font-weight: 600; }
+        .route-node p { margin: 0; font-size: 13px; color: var(--text-muted); }
+
+        /* Visual Guide Frame inside Result */
+        .screenshot-placeholder { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-subtle); display: none; }
+        .visual-guide-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--green-muted); letter-spacing: 1px; margin-bottom: 12px; }
+        .screenshot-placeholder img { width: 100%; border-radius: 6px; border: 1px solid var(--border-subtle); opacity: 0.8; }
+
+        /* --- 7. HOW IT WORKS & ABOUT --- */
+        .info-section { 
+            max-width: 1000px; margin: 0 auto 100px; padding: 60px 5vw 0; border-top: 1px solid var(--border-subtle); 
+            opacity: 0;
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+        }
+        .section-title { font-size: 24px; color: var(--text-main); font-weight: 600; margin-bottom: 40px; display: flex; align-items: center; gap: 12px; }
+        .section-title::before { content: ''; width: 30px; height: 1px; background: var(--green-primary); }
+
+        /* Route Path Map (How it Works) */
+        .path-map { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; position: relative; }
+        .path-map::before { content: ''; position: absolute; top: 16px; left: 20px; right: 20px; height: 1px; background: dashed 1px var(--border-subtle); z-index: 0; }
+        .path-node { background: var(--surface-1); border: 1px solid var(--border-subtle); padding: 24px; border-radius: 8px; position: relative; z-index: 1; }
+        .node-step { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--green-primary); margin-bottom: 12px; display: block; }
+        .path-node h3 { font-size: 16px; margin: 0 0 8px 0; color: var(--text-main); }
+        .path-node p { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+        /* About Text */
+        .about-text { font-size: 16px; color: var(--text-muted); max-width: 700px; line-height: 1.8; }
+        .about-text strong { color: var(--text-main); font-weight: 500; }
+
+        /* --- 8. FOOTER --- */
+        .site-footer {
+            border-top: 1px solid var(--border-subtle); background: var(--surface-1);
+            padding: 60px 5vw 40px; position: relative; overflow: hidden;
+            opacity: 0;
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+        }
+        /* Footer tech aesthetics */
+        .site-footer::before { content: 'ROUTE COMPLETE'; position: absolute; top: 20px; right: 5vw; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--green-muted); letter-spacing: 2px; }
+        .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+        
+        .footer-status h4 { font-size: 16px; color: var(--text-main); margin: 0 0 12px 0; }
+        .footer-status p { font-size: 13px; color: var(--text-muted); margin: 0 0 6px 0; }
+        .footer-status .highlight { color: var(--green-muted); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+        .footer-dev { text-align: right; }
+        .footer-dev p { font-size: 13px; color: var(--text-muted); margin: 0 0 16px 0; }
+        .footer-dev strong { color: var(--green-primary); }
+        .social-links { display: flex; gap: 16px; justify-content: flex-end; }
+        .social-links a { color: var(--text-muted); transition: all 0.2s; display: block; }
+        .social-links a:hover { color: var(--green-primary); transform: translateY(-2px); filter: drop-shadow(0 0 8px rgba(57,255,136,0.4)); }
+        
+        .footer-bottom { border-top: 1px solid var(--surface-3); padding-top: 24px; text-align: center; font-size: 12px; color: var(--border-subtle); font-family: 'JetBrains Mono', monospace; }
+
+        /* --- 9. SMOOTH ANIMATIONS --- */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; text-shadow: 0 0 10px var(--green-primary); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 850px) {
+            .console-wrapper { grid-template-columns: 1fr; gap: 40px; }
+            .hero h1 { font-size: 32px; }
+            .footer-grid { grid-template-columns: 1fr; text-align: left; }
+            .footer-dev { text-align: left; }
+            .social-links { justify-content: flex-start; }
+            .path-map::before { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Environment Glow & Grid -->
+    <div class="bg-grid"></div>
+    <div id="cursorGlow"></div>
+
+    <!-- NAVIGATION -->
+    <nav class="top-nav">
+        <a href="#" class="nav-brand"><span class="nav-brand-icon">⌖</span> ACE-Scholar</a>
+        <div class="nav-links">
+            <a href="#how-it-works">How it works</a>
+            <a href="#about">About</a>
+            <div class="status-badge"><div class="status-dot"></div> AI Ready</div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="hero">
+        <div class="hero-crosshair"></div>
+        <span class="eyebrow">Your Academic Compass</span>
+        <h1>Stop Wasting Your Time.<br>Just get your work done.</h1>
+        <p>AI-powered navigation for unfamiliar academic platforms. Tell us what you're trying to accomplish, and we'll calculate the route.</p>
+    </header>
+
+    <!-- WORKSPACE -->
+    <main class="console-wrapper">
+        
+        <!-- Left: Console -->
+        <div class="navigation-console">
+            <span class="section-label">01 // Set Platform</span>
+            
+            <div class="platform-tabs">
+                <div class="p-tab active" id="tab-digicampus" onclick="selectPlatform('digicampus')">DigiCampus</div>
+                <div class="p-tab" id="tab-moodle" onclick="selectPlatform('moodle')">Moodle</div>
+                <div class="p-tab" id="tab-canvas" onclick="selectPlatform('canvas')">Canvas</div>
+            </div>
+            <input type="hidden" id="platform" value="digicampus">
+
+            <span class="section-label">02 // Enter Task</span>
+            <div class="command-input-area">
+                <textarea id="question" placeholder="> e.g. Where is my attendance? (Or describe your issue here and upload a screenshot below!)"></textarea>
+            </div>
+
+            <div class="suggestions">
+                <div class="sugg-chip" onclick="setExample('Where\'s my attendance?')">Where's my attendance?</div>
+                <div class="sugg-chip" onclick="setExample('Find my notes')">Find my notes</div>
+                <div class="sugg-chip" onclick="setExample('How do I upload marks?')">How do I upload marks?</div>
+            </div>
+
+            <button class="btn-primary" onclick="getNavigation()">Find My Way →</button>
+
+             <!-- Secondary Screenshot Pathway -->
+            <div class="upload-pathway" onclick="document.getElementById('screenshotUpload').click()">
+                <strong id="uploadTitle">Can't find your way? Show us.</strong>
+                <span id="uploadSubtitle">Click here to upload a screenshot of the page you're stuck on.</span>
+                <input type="file" id="screenshotUpload" accept="image/*" style="display: none;" onchange="handleImageAttachment(event)">
+            </div>
+        </div>
+
+        <!-- Right: Results Map -->
+        <div class="result-area" id="resultBox">
+            <div class="route-header">ROUTE ACTIVE</div>
+            
+            <div id="instructionsText"></div>
+
+            <div id="screenshotArea" class="screenshot-placeholder">
+                <div class="visual-guide-label">VISUAL GUIDE //</div>
+                <img id="helperImage" src="" alt="Navigation screenshot helper">
+            </div>
+        </div>
+
+    </main>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="info-section">
+        <h2 class="section-title">Navigation Protocol</h2>
+        <div class="path-map">
+            <div class="path-node">
+                <span class="node-step">COORD_01</span>
+                <h3>Choose platform</h3>
+                <p>Select the academic system you are currently operating.</p>
+            </div>
+            <div class="path-node">
+                <span class="node-step">COORD_02</span>
+                <h3>Tell us your task</h3>
+                <p>Describe your goal in plain language.</p>
+            </div>
+            <div class="path-node">
+                <span class="node-step">COORD_03</span>
+                <h3>Find your route</h3>
+                <p>Receive step-by-step navigation directly to your destination.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="info-section">
+        <h2 class="section-title">About ACE-Scholar</h2>
+        <p class="about-text">
+            <strong>Academic software shouldn't feel like a maze.</strong><br><br>
+            ACE-Scholar is designed to help students and faculty navigate unfamiliar academic platforms without spending hours figuring out where everyday features are located. You tell ACE-Scholar what you are trying to accomplish, and the system calculates the most efficient route.
+        </p>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-status">
+                <h4>ACE-Scholar</h4>
+                <p>Currently supporting: DigiCampus · Moodle · Canvas</p>
+                <p class="highlight">More routes are being mapped.</p>
+            </div>
+            <div class="footer-dev">
+                <p>Built by <strong>NANDINI SHARMA</strong></p>
+                <div class="social-links">
+                    <!-- GitHub SVG Icon -->
+                    <a href="YOUR_GITHUB_URL" aria-label="GitHub">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                    </a>
+                    <!-- LinkedIn SVG Icon -->
+                    <a href="YOUR_LINKEDIN_URL" aria-label="LinkedIn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © 2026 ACE-Scholar. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT -->
+        <script>
+                // JS 0: Force scroll to top on refresh
+        if (history.scrollRestoration) {
+            history.scrollRestoration = "manual";
+        }
+        window.onload = function() {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        };
+
+        // JS 1: Dynamic Cursor Glow
+        const glow = document.getElementById("cursorGlow");
+        document.addEventListener("mousemove", (e) => {
+            if (glow) {
+                glow.style.setProperty("--mouse-x", e.clientX + "px");
+                glow.style.setProperty("--mouse-y", e.clientY + "px");
+            }
+        });
+
+        // JS 2: Active Navigation State
+        const sections = document.querySelectorAll("section");
+        const navLinks = document.querySelectorAll(".nav-links a");
+        window.addEventListener("scroll", () => {
+            let current = "";
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 100) {
+                    current = section.getAttribute("id");
+                }
+            });
+            navLinks.forEach(link => {
+                link.classList.remove("active");
+                if (link.getAttribute("href") === "#" + current) {
+                    link.classList.add("active");
+                }
+            });
+        });
+
+        // JS 3: Handle Platform Tab Selection
+        function selectPlatform(platformValue) {
+            document.querySelectorAll(".p-tab").forEach(tab => tab.classList.remove("active"));
+            document.getElementById("tab-" + platformValue).classList.add("active");
+            document.getElementById("platform").value = platformValue;
+        }
+
+        function setExample(text) {
+            document.getElementById("question").value = text;
+        }
+
+        // 🌟 NEW: Global variable to hold the image until the user clicks the button
+        let attachedImageBase64 = null;
+
+        // JS 4: Handle Image Attachment (Wait for button click!)
+        function handleImageAttachment(event) {
+            const file = event.target.files.item(0);
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Store the image in memory
+                attachedImageBase64 = e.target.result;
+                
+                // Update the UI so the user knows it worked
+                document.getElementById('uploadTitle').innerText = "✅ Screenshot Attached!";
+                document.getElementById('uploadTitle').style.color = "var(--green-primary)";
+                document.getElementById('uploadSubtitle').innerText = "Type your question above and click 'Find My Way →'";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // JS 5: The Master Submit Function (Handles Text ONLY or Text + Image)
+        async function getNavigation() {
+            const platform = document.getElementById("platform").value;
+            const questionBox = document.getElementById("question");
+            const question = questionBox.value;
+
+            // Make sure they either typed a question OR attached an image
+            if (!question.trim() && !attachedImageBase64) {
+                alert("Please describe what you are trying to accomplish, or attach a screenshot.");
+                return;
+            }
+
+            const resultBox = document.getElementById("resultBox");
+            const instructionsText = document.getElementById("instructionsText");
+            const screenshotArea = document.getElementById("screenshotArea");
+            const helperImage = document.getElementById("helperImage");
+
+            resultBox.style.display = "block";
+            resultBox.scrollIntoView({ behavior: "smooth", block: "start" });
+
+            // Setup loading UI based on whether an image is attached
+            if (attachedImageBase64) {
+                screenshotArea.style.display = "block";
+                helperImage.src = attachedImageBase64;
+                instructionsText.innerHTML = `
+                    <div class="route-node">
+                        <div class="node-marker" style="animation: pulse 1s infinite;">⌖</div>
+                        <h4>Analyzing Image & Request...</h4>
+                        <p style="color: var(--green-primary);">AI vision is scanning your screen coordinates...</p>
+                    </div>`;
+            } else {
+                screenshotArea.style.display = "none";
+                instructionsText.innerHTML = `
+                    <div class="route-node">
+                        <div class="node-marker" style="animation: pulse 1s infinite;">⌖</div>
+                        <h4>Calculating Route...</h4>
+                        <p style="color: var(--green-primary);">AI is mapping the academic portal coordinates...</p>
+                    </div>`;
+            }
+
+            try {
+                // Build the payload dynamically
+                const payload = { platform, question };
+                if (attachedImageBase64) {
+                    payload.image = attachedImageBase64;
+                }
+
+                const response = await fetch("/api/navigate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                let routeHTML = "";
+                data.steps.forEach((step, index) => {
+                    const stepNumber = String(index + 1).padStart(2, "0");
+                    const isLast = index === data.steps.length - 1;
+                    
+                    routeHTML += `
+                        <div class="route-node ${isLast ? "success" : ""}">
+                            <div class="node-marker">${isLast ? "✓" : stepNumber}</div>
+                            <h4>${step.title}</h4>
+                            <p>${step.description}</p>
+                        </div>
+                    `;
+                });
+
+                instructionsText.innerHTML = routeHTML;
+
+                // 🌟 UX MAGIC: Reset everything for the next question!
+                questionBox.value = "";
+                attachedImageBase64 = null;
+                document.getElementById("screenshotUpload").value = "";
+                
+                // Reset the upload box UI
+                document.getElementById('uploadTitle').innerText = "Can't find your way? Show us.";
+                document.getElementById('uploadTitle').style.color = "var(--text-main)";
+                document.getElementById('uploadSubtitle').innerText = "Click to upload a screenshot of the page you're stuck on.";
+
+            } catch (error) {
+                console.error("Frontend Fetch Error:", error);
+                instructionsText.innerHTML = `
+                    <div class="route-node">
+                        <div class="node-marker" style="color: #ff4444; border-color: #ff4444;">!</div>
+                        <h4 style="color: #ff4444;">Navigation Failed</h4>
+                        <p>Could not load route. Is your backend server running?</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
